@@ -1,7 +1,7 @@
-2014-05-08 23:32:03
+2014-05-09 00:01:55
 
-commit 582f2a9f6bf2a5e6c1d67bec435fca343740e03b (HEAD, refs/remotes/origin/master, refs/remotes/origin/HEAD, refs/heads/master)
+commit 532b7b8ce0675170b9ed39d768f1bb61ef7ec5b2 (HEAD, refs/remotes/origin/master, refs/remotes/origin/HEAD, refs/heads/master)
 Author: Ivan De Marino <detronizator@gmail.com>
-Date:   Thu May 8 00:50:40 2014 +0100
+Date:   Fri May 9 00:01:40 2014 +0100
 
-    Finishing update of Source headers
+    By default, test PhantomJSDriver taking it from Maven
