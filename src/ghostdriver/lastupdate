@@ -1,7 +1,7 @@
-2014-05-09 00:01:55
+2014-05-23 21:36:51
 
-commit 532b7b8ce0675170b9ed39d768f1bb61ef7ec5b2 (HEAD, refs/remotes/origin/master, refs/remotes/origin/HEAD, refs/heads/master)
+commit 54afa3f01e487e4c48f3d9ae9e9ec352eec9a3c2 (HEAD, refs/remotes/origin/master, refs/remotes/origin/HEAD, refs/heads/master)
 Author: Ivan De Marino <detronizator@gmail.com>
-Date:   Fri May 9 00:01:40 2014 +0100
+Date:   Fri May 23 21:36:07 2014 +0100
 
-    By default, test PhantomJSDriver taking it from Maven
+    Adding commented line useful during testing with PhantomJS 2 (Qt5)
