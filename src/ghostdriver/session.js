@@ -119,7 +119,10 @@ ghostdriver.Session = function(desiredCapabilities) {
     _pageCustomHeaders = {},
     _log = ghostdriver.logger.create("Session [" + _id + "]"),
     k, settingKey, headerKey, proxySettings;
-
+    
+   //customHeaders only for the first page request
+    _isFirstRequest = true;
+    
     var
     /**
      * Parses proxy JSON object and return proxy settings for phantom
@@ -428,6 +431,11 @@ ghostdriver.Session = function(desiredCapabilities) {
                 endReply: null,
                 error: null
             };
+            if (_isFirstRequest) {
+                page.customHeaders = {};
+                _isFirstRequest = false;
+            }
+
         };
         page.onResourceReceived = function (res) {
             _log.debug("page.onResourceReceived", JSON.stringify(res));
