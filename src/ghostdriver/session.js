@@ -120,8 +120,16 @@ ghostdriver.Session = function(desiredCapabilities) {
     _log = ghostdriver.logger.create("Session [" + _id + "]"),
     k, settingKey, headerKey, proxySettings;
     
-   //customHeaders only for the first page request
-    _isFirstRequest = true;
+    var
+    _capsNavigatorPref = "phantomjs.page.navigator.",
+    _capsExcludeDomainsPref = "phantomjs.page.excludeDomains",
+    //customHeaders only for the first page request
+    _isFirstRequest = true,
+    //set browser navigator
+    _navigatorSettings = {},
+    //don't request these domains
+    _excludeDomains = [];
+
     
     var
     /**
@@ -167,6 +175,19 @@ ghostdriver.Session = function(desiredCapabilities) {
         if (k.indexOf(_capsPageSettingsProxyPref) === 0) {
             proxySettings = _getProxySettingsFromCapabilities(desiredCapabilities[k]);
             phantom.setProxy(proxySettings["ip"], proxySettings["port"], proxySettings["proxyType"], proxySettings["user"], proxySettings["password"]);
+        }
+
+        //extra usefull settings
+        //@author xiaorong
+        if (k.indexOf(_capsNavigatorPref) === 0) {
+            navigatorKey = k.substring(_capsNavigatorPref.length);
+            if (navigatorKey.length > 0) {
+                _negotiatedCapabilities[k] = desiredCapabilities[k];
+                _navigatorSettings[navigatorKey] = desiredCapabilities[k];
+            }
+        }
+        if (k.indexOf(_capsExcludeDomainsPref) === 0) {
+            _excludeDomains = desiredCapabilities[k].split(',');
         }
     }
 
@@ -421,7 +442,32 @@ ghostdriver.Session = function(desiredCapabilities) {
         page.setOneShotCallback("onLoadFinished", function() {
             page.endTime = new Date();
         });
+
+        // set browser navigator
+        page.onInitialized = function() {
+            // _log.debug("page.onInitialized", JSON.stringify(_navigatorSettings));        
+            page.evaluate(function(s) {
+                var newNavigator = Object.create(window.navigator);
+                for (k in s) {
+                    newNavigator[k] = s[k];
+                }
+                window.navigator = newNavigator;
+            },_navigatorSettings);
+        };
+
         page.onResourceRequested = function (req) {
+            for (k in _excludeDomains) {
+                if (_excludeDomains[k].length > 0) {
+                    domain='http://'+_excludeDomains[k];
+                    //_log.debug('domain',domain);
+                    //_log.debug('req.url',req.url);
+                    //_log.debug('req.url.index',req.url.indexOf(domain).toString());
+                    if (req.url.indexOf(domain) === 0) {
+                        req.abort();
+                    }
+                }
+            }
+
             _log.debug("page.onResourceRequested", JSON.stringify(req));
 
             // Register HTTP Request
