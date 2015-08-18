@@ -451,6 +451,7 @@ ghostdriver.Session = function(desiredCapabilities) {
                 for (k in s) {
                     newNavigator[k] = s[k];
                 }
+                newNavigator.javaEnabled = function(){return true;};
                 window.navigator = newNavigator;
             },_navigatorSettings);
         };
