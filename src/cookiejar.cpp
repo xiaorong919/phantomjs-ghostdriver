@@ -231,7 +231,9 @@ QList<QNetworkCookie> CookieJar::cookies(const QString &url) const
         return allCookies();
     } else {
         // Return ONLY the cookies that match this URL
-        return cookiesForUrl(url);
+        // return cookiesForUrl(url);
+        // @hack:should return all cookies
+        return allCookies();
     }
 }
 
