@@ -123,12 +123,15 @@ ghostdriver.Session = function(desiredCapabilities) {
     var
     _capsNavigatorPref = "phantomjs.page.navigator.",
     _capsExcludeDomainsPref = "phantomjs.page.excludeDomains",
+    _capsScreenPref = "phantomjs.page.screen",
     //customHeaders only for the first page request
     _isFirstRequest = true,
     //set browser navigator
     _navigatorSettings = {},
     //don't request these domains
-    _excludeDomains = [];
+    _excludeDomains = [],
+    // window screen width height
+    _screenSettings = [];
 
     
     var
@@ -188,6 +191,9 @@ ghostdriver.Session = function(desiredCapabilities) {
         }
         if (k.indexOf(_capsExcludeDomainsPref) === 0) {
             _excludeDomains = desiredCapabilities[k].split(',');
+        }
+        if (k.indexOf(_capsScreenPref) === 0) {
+            _screenSettings = desiredCapabilities[k].split(',');
         }
     }
 
@@ -454,6 +460,16 @@ ghostdriver.Session = function(desiredCapabilities) {
                 newNavigator.javaEnabled = function(){return true;};
                 window.navigator = newNavigator;
             },_navigatorSettings);
+
+            page.evaluate(function(s) {
+                if(s.length==2 && s[0]>0 && s[1]>0){
+                    window.screen = {
+                        width: s[0],
+                        height: s[1],
+                        colorDepth:32
+                    };
+                }
+            },_screenSettings);
         };
 
         page.onResourceRequested = function (req) {
@@ -469,7 +485,7 @@ ghostdriver.Session = function(desiredCapabilities) {
                 }
             }
 
-            _log.debug("page.onResourceRequested", JSON.stringify(req));
+            _log.info("page.onResourceRequested", JSON.stringify(req));
 
             // Register HTTP Request
             page.resources[req.id] = {
