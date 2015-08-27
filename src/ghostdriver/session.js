@@ -124,6 +124,7 @@ ghostdriver.Session = function(desiredCapabilities) {
     _capsNavigatorPref = "phantomjs.page.navigator.",
     _capsExcludeDomainsPref = "phantomjs.page.excludeDomains",
     _capsScreenPref = "phantomjs.page.screen",
+    _capsExcludeFilePref = "phantomjs.page.excludeFiles",
     //customHeaders only for the first page request
     _isFirstRequest = true,
     //set browser navigator
@@ -131,7 +132,9 @@ ghostdriver.Session = function(desiredCapabilities) {
     //don't request these domains
     _excludeDomains = [],
     // window screen width height
-    _screenSettings = [];
+    _screenSettings = [],
+    //don't request files with these suffix
+    _excludeFiles = null;
 
     
     var
@@ -194,6 +197,9 @@ ghostdriver.Session = function(desiredCapabilities) {
         }
         if (k.indexOf(_capsScreenPref) === 0) {
             _screenSettings = desiredCapabilities[k].split(',');
+        }
+        if (k.indexOf(_capsExcludeFilePref) === 0) {
+            _excludeFiles = desiredCapabilities[k];
         }
     }
 
@@ -466,21 +472,34 @@ ghostdriver.Session = function(desiredCapabilities) {
                     window.screen = {
                         width: s[0],
                         height: s[1],
+                        availWidth:s[0],
+                        availHeight:s[1],
                         colorDepth:32
                     };
                 }
             },_screenSettings);
         };
 
-        page.onResourceRequested = function (req) {
-            for (k in _excludeDomains) {
-                if (_excludeDomains[k].length > 0) {
-                    domain='http://'+_excludeDomains[k];
-                    //_log.debug('domain',domain);
-                    //_log.debug('req.url',req.url);
-                    //_log.debug('req.url.index',req.url.indexOf(domain).toString());
-                    if (req.url.indexOf(domain) === 0) {
-                        req.abort();
+        page.onResourceRequested = function (req,networkRequest) {
+            //don't request these files with suffix
+            //example:  /http[s]?:\/\/.+?\.(css|jpg|png|jpeg|bmp|swf)+/i
+            if(_excludeFiles){
+                var reg = new RegExp('^http[s]?:\/\/.+?\.('+_excludeFiles+')+$','i');
+                if(reg.test(req.url)) {
+                    _log.debug("exclude files,request abort", JSON.stringify(req));
+                    networkRequest.abort();
+                }
+            }
+            
+            if(_excludeDomains){
+                for (k in _excludeDomains) {
+                    if (_excludeDomains[k].length > 0) {
+                        domain=_excludeDomains[k];
+                        var reg = new RegExp('^http[s]?:\/\/'+domain,'i');
+                        if (reg.test(req.url)) {
+                            _log.debug("exclude domains,request abort", JSON.stringify(req));
+                            networkRequest.abort();
+                        }
                     }
                 }
             }
