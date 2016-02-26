@@ -481,6 +481,49 @@ ghostdriver.Session = function(desiredCapabilities) {
         };
 
         page.onResourceRequested = function (req,networkRequest) {
+            //fix:'%' will be encoded to '%25' when using escape function in javascript 
+            //thus the url is not what you want
+            var newurl='';
+            var escape_keywords=['%253A','%253F','%253D','%25u'];
+            var flag=false;
+            for(var i in escape_keywords){
+                var kw=escape_keywords[i];
+                if(req.url.indexOf(kw)>-1){
+                    flag=true;
+                    break;
+                }
+            }
+            if(flag){
+                var first_decode_url=decodeURI(req.url);
+                var pos=first_decode_url.indexOf('?');
+                var url_path=first_decode_url.substr(0,pos);
+                var querystring=first_decode_url.substr(pos+1);
+                var items=querystring.split('&');
+                var filter_items=[];
+                for(var i in items){
+                    var item=items[i];
+                    var need_filter=false;
+                    for(var i in escape_keywords){
+                        if(item.indexOf(i)>-1){
+                            need_filter=true;
+                            break;
+                        }
+                    }
+                    if(need_filter){
+                        var kw=item.split('=');
+                        if(kw.length==1){
+                            filter_items.push(encodeURIComponent(unescape(kw[0])));
+                        }else{
+                            filter_items.push(encodeURIComponent(unescape(kw[0]))+'='+encodeURIComponent(unescape(kw[1])));
+                        }
+                    }
+                }
+                newurl=url_path+'?'+filter_items.join('&');
+            }
+            if(newurl){
+                networkRequest.changeUrl(newurl);
+            }
+
             //don't request these files with suffix
             //example:  /http[s]?:\/\/.+?\.(css|jpg|png|jpeg|bmp|swf)+/i
             if(_excludeFiles){
