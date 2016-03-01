@@ -484,7 +484,7 @@ ghostdriver.Session = function(desiredCapabilities) {
             //fix:'%' will be encoded to '%25' when using escape function in javascript 
             //thus the url is not what you want
             var newurl='';
-            var escape_keywords=['%253A','%253F','%253D','%25u'];
+            var escape_keywords=['%25u'];
             var flag=false;
             for(var i in escape_keywords){
                 var kw=escape_keywords[i];
@@ -516,6 +516,8 @@ ghostdriver.Session = function(desiredCapabilities) {
                         }else{
                             filter_items.push(encodeURIComponent(unescape(kw[0]))+'='+encodeURIComponent(unescape(kw[1])));
                         }
+                    }else{
+                        filter_items.push(item);
                     }
                 }
                 newurl=url_path+'?'+filter_items.join('&');
